@@ -1,125 +1,87 @@
-{%- style -%}
-.rage-body {
-background: #0a0a0a;
-color: #fff;
-font-family: Arial, sans-serif;
-padding-bottom: 50px;
+<style>
+/* ... existing styles ... */
+
+.address-fields {
+margin-top: 20px;
+border-top: 1px solid #333;
+padding-top: 15px;
 }
-.rage-header {
-background: black;
-padding: 40px 20px;
-text-align: center;
-font-size: 40px;
-font-weight: bold;
+
+.address-fields input {
+width: 100%;
+padding: 8px;
+margin: 5px 0;
+background: #222;
+border: 1px solid #444;
+color: white;
+box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+.address-fields h4 {
+margin: 5px 0;
+font-size: 14px;
 color: #ff1a1a;
-text-transform: uppercase;
-letter-spacing: 2px;
 }
-.rage-hero {
-text-align: center;
-padding: 60px 20px;
-}
-.rage-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap: 30px;
-padding: 20px;
-max-width: 1200px;
-margin: 0 auto;
-}
-.rage-product-card {
-background: #1a1a1a;
-padding: 20px;
-border-radius: 4px;
-text-align: center;
-transition: transform 0.2s;
-border: 1px solid #333;
-}
-.rage-product-card:hover {
-border-color: #ff1a1a;
-}
-.rage-product-card img {
-width: 100%;
-height: auto;
-margin-bottom: 15px;
-}
-.rage-btn {
-background: #ff1a1a;
-padding: 12px 24px;
-color: #000;
-font-weight: bold;
-cursor: pointer;
-border: none;
-width: 100%;
-text-transform: uppercase;
-margin-top: 15px;
-}
-.rage-btn:hover {
-background: #cc0000;
-}
-{%- endstyle -%}
+</style>
 
-<div class="rage-body">
-<header class="rage-header">
-{{ section.settings.heading | upcase }}
-</header>
+<div class="cart">
+<h2>🛒 Cart</h2>
+<div id="cartItems"></div>
+<h3>Total: $<span id="total">0</span></h3>
 
-<section class="rage-hero">
-<h1>{{ section.settings.hero_title }}</h1>
-<p>{{ section.settings.hero_subtitle }}</p>
-</section>
-
-<div class="rage-grid">
-{% for product in section.settings.collection.products %}
-<div class="rage-product-card">
-{% if product.featured_image %}
-<img src="{{ product.featured_image | img_url: '400x400', crop: 'center' }}" alt="{{ product.title }}">
-{% endif %}
-<h3>{{ product.title }}</h3>
-<p>{{ product.price | money }}</p>
-
-{% comment %} Using Shopify's native form for actual sales {% endcomment %}
-{% form 'product', product %}
-<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-<button type="submit" class="rage-btn">Add to Cart</button>
-{% endform %}
-</div>
-{% endfor %}
-</div>
+<div class="address-fields">
+<h4>Shipping Details</h4>
+<input type="text" id="custName" placeholder="Full Name">
+<input type="text" id="custAddr" placeholder="Street Address">
+<input type="text" id="custCity" placeholder="City, State, Zip">
 </div>
 
-{% schema %}
-{
-"name": "Rage District Shop",
-"settings": [
-{
-"type": "text",
-"id": "heading",
-"label": "Store Name",
-"default": "Rage District"
-},
-{
-"type": "text",
-"id": "hero_title",
-"label": "Hero Title",
-"default": "Streetwear Built From Chaos"
-},
-{
-"type": "text",
-"id": "hero_subtitle",
-"label": "Hero Subtitle",
-"default": "Rage District Collection"
-},
-{
-"type": "collection",
-"id": "collection",
-"label": "Select Collection"
+<button class="checkout" onclick="checkout()" style="margin-top: 15px;">Checkout</button>
+</div>
+
+<script>
+let cart = [];
+let total = 0;
+
+function addToCart(name, price) {
+cart.push({name, price});
+total += price;
+displayCart();
 }
-],
-"presets": [
-{
-"name": "Rage District Shop"
+
+function displayCart() {
+let cartItems = document.getElementById("cartItems");
+cartItems.innerHTML = "";
+
+cart.forEach(item => {
+let div = document.createElement("div");
+div.classList.add("cart-item");
+div.innerText = item.name + " - $" + item.price;
+cartItems.appendChild(div);
+});
+
+document.getElementById("total").innerText = total;
 }
-]
+
+function checkout() {
+const name = document.getElementById("custName").value;
+const addr = document.getElementById("custAddr").value;
+const city = document.getElementById("custCity").value;
+
+if (cart.length === 0) {
+alert("Your cart is empty!");
+return;
 }
-{% endschema %}
+
+if (!name || !addr || !city) {
+alert("Please fill out your shipping address before checking out.");
+return;
+}
+
+// Optional: Alert the user to include their name in the Cash App note
+alert("Please include your name ('" + name + "') in the Cash App note so we can match your payment to your address!");
+
+// Redirect to Cash App
+window.location.href = "https://cash.app/$Trxpstartarahji/" + total;
+}
+</script>
