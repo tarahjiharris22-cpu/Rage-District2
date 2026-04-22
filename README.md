@@ -1,181 +1,125 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rage District</title>
-
-<style>
-body {
-margin: 0;
-font-family: Arial;
+{%- style -%}
+.rage-body {
 background: #0a0a0a;
 color: #fff;
+font-family: Arial, sans-serif;
+padding-bottom: 50px;
 }
-
-header {
+.rage-header {
 background: black;
-padding: 20px;
+padding: 40px 20px;
 text-align: center;
-font-size: 30px;
+font-size: 40px;
+font-weight: bold;
 color: #ff1a1a;
+text-transform: uppercase;
+letter-spacing: 2px;
 }
-
-nav {
-display: flex;
-justify-content: center;
-gap: 20px;
-background: #111;
-padding: 10px;
-}
-
-nav a {
-color: white;
-text-decoration: none;
-}
-
-.hero {
+.rage-hero {
 text-align: center;
-padding: 100px 20px;
+padding: 60px 20px;
 }
-
-.btn {
-background: #ff1a1a;
-padding: 10px 20px;
-color: black;
-cursor: pointer;
-border: none;
-margin-top: 10px;
-}
-
-.products {
-padding: 40px;
-text-align: center;
-}
-
-.grid {
+.rage-grid {
 display: grid;
-grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-gap: 20px;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 30px;
+padding: 20px;
+max-width: 1200px;
+margin: 0 auto;
 }
-
-.product {
+.rage-product-card {
 background: #1a1a1a;
-padding: 15px;
-border-radius: 10px;
-}
-
-.cart {
-position: fixed;
-right: 0;
-top: 0;
-width: 250px;
-height: 100%;
-background: black;
-padding: 15px;
-overflow-y: auto;
-}
-
-.cart h2 {
+padding: 20px;
+border-radius: 4px;
 text-align: center;
+transition: transform 0.2s;
+border: 1px solid #333;
 }
-
-.cart-item {
-margin: 10px 0;
+.rage-product-card:hover {
+border-color: #ff1a1a;
 }
-
-.checkout {
+.rage-product-card img {
 width: 100%;
-padding: 10px;
+height: auto;
+margin-bottom: 15px;
+}
+.rage-btn {
 background: #ff1a1a;
-border: none;
+padding: 12px 24px;
+color: #000;
+font-weight: bold;
 cursor: pointer;
+border: none;
+width: 100%;
+text-transform: uppercase;
+margin-top: 15px;
 }
-</style>
-</head>
+.rage-btn:hover {
+background: #cc0000;
+}
+{%- endstyle -%}
 
-<body>
+<div class="rage-body">
+<header class="rage-header">
+{{ section.settings.heading | upcase }}
+</header>
 
-<header>RAGE DISTRICT</header>
-
-<nav>
-<a href="#">Home</a>
-<a href="#shop">Shop</a>
-</nav>
-
-<section class="hero">
-<h1>Streetwear Built From Chaos</h1>
-<p>Rage District Collection</p>
+<section class="rage-hero">
+<h1>{{ section.settings.hero_title }}</h1>
+<p>{{ section.settings.hero_subtitle }}</p>
 </section>
 
-<section class="products" id="shop">
-<h2>Shop</h2>
+<div class="rage-grid">
+{% for product in section.settings.collection.products %}
+<div class="rage-product-card">
+{% if product.featured_image %}
+<img src="{{ product.featured_image | img_url: '400x400', crop: 'center' }}" alt="{{ product.title }}">
+{% endif %}
+<h3>{{ product.title }}</h3>
+<p>{{ product.price | money }}</p>
 
-<div class="grid">
-
-<div class="product">
-<h3>Graphic Shirt</h3>
-<p>$30</p>
-<button class="btn" onclick="addToCart('Graphic Shirt', 30)">Add to Cart</button>
+{% comment %} Using Shopify's native form for actual sales {% endcomment %}
+{% form 'product', product %}
+<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+<button type="submit" class="rage-btn">Add to Cart</button>
+{% endform %}
+</div>
+{% endfor %}
+</div>
 </div>
 
-<div class="product">
-<h3>Zip-Up Jacket</h3>
-<p>$70</p>
-<button class="btn" onclick="addToCart('Zip-Up Jacket', 70)">Add to Cart</button>
-</div>
-
-<div class="product">
-<h3>Jorts</h3>
-<p>$45</p>
-<button class="btn" onclick="addToCart('Jorts', 45)">Add to Cart</button>
-</div>
-
-<div class="product">
-<h3>Street Pants</h3>
-<p>$60</p>
-<button class="btn" onclick="addToCart('Street Pants', 60)">Add to Cart</button>
-</div>
-
-</div>
-</section>
-
-<div class="cart">
-<h2>🛒 Cart</h2>
-<div id="cartItems"></div>
-<h3>Total: $<span id="total">0</span></h3>
-
-<button class="checkout" onclick="checkout()">Checkout</button>
-</div>
-
-<script>
-let cart = [];
-let total = 0;
-
-function addToCart(name, price) {
-cart.push({name, price});
-total += price;
-displayCart();
+{% schema %}
+{
+"name": "Rage District Shop",
+"settings": [
+{
+"type": "text",
+"id": "heading",
+"label": "Store Name",
+"default": "Rage District"
+},
+{
+"type": "text",
+"id": "hero_title",
+"label": "Hero Title",
+"default": "Streetwear Built From Chaos"
+},
+{
+"type": "text",
+"id": "hero_subtitle",
+"label": "Hero Subtitle",
+"default": "Rage District Collection"
+},
+{
+"type": "collection",
+"id": "collection",
+"label": "Select Collection"
 }
-
-function displayCart() {
-let cartItems = document.getElementById("cartItems");
-cartItems.innerHTML = "";
-
-cart.forEach(item => {
-let div = document.createElement("div");
-div.classList.add("cart-item");
-div.innerText = item.name + " - $" + item.price;
-cartItems.appendChild(div);
-});
-
-document.getElementById("total").innerText = total;
+],
+"presets": [
+{
+"name": "Rage District Shop"
 }
-
-function checkout() {
-window.location.href = "https://cash.app/$Trxpstartarahji";
+]
 }
-</script>
-
-</body>
-</html>
+{% endschema %}
